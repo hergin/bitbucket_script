@@ -41,7 +41,7 @@ do
 	    done
             ;;
         2)
-            echo "TODO"
+            echo "Obviously, this is not supported in v2."
             ;;
         3)
             IFS=$'\n'
