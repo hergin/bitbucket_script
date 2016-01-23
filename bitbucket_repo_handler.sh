@@ -1,6 +1,6 @@
 #!/bin/bash
-
-baseUrl="https://api.bitbucket.org/2.0/repositories/"
+privilegeBaseUrl="https://api.bitbucket.org/1.0/privileges/"
+repoBaseUrl="https://api.bitbucket.org/2.0/repositories/"
 
 echo "BITBUCKET REPO HANDLER SCRIPT"
 
@@ -36,19 +36,80 @@ do
 
 	    for i in `seq 1 $teamCount`
 	    do
-		curl -X POST -v -u $bitbucketUserName:$bitbucketPassword -H "Content-Type: application/json" $baseUrl$bitbucketUserName/$classCode$semester"team"$i -d '{"scm": "git", "is_private": "true", "fork_policy": "no_public_forks"}'
+		curl -X POST -v -u $bitbucketUserName:$bitbucketPassword -H "Content-Type: application/json" $repoBaseUrl$bitbucketUserName/$classCode$semester"team"$i -d '{"scm": "git", "is_private": "true", "fork_policy": "no_public_forks"}'
 		echo $classCode$semester"team"$i >> createdRepos.txt
 	    done
             ;;
         2)
             echo "Obviously, this is not supported in v2."
+            echo "But supported in v1. Therefore, I will use it for now."
+            
+            addSelected=1
+            
+            while [ $addSelected -ne 3 ]
+            do
+	        echo "1- Add manually"
+	        echo "2- Add from file"
+	        echo "3- Quit"
+	        
+	        read addSelected
+	        
+	        case $addSelected in
+		    1)
+			repoName=""
+			userName=""
+			
+			while true
+			do
+			    echo "Enter repo name (type 'quit' to quit): "
+			    read repoName
+			    
+			    if [ "$repoName" == "quit" ];
+			    then
+				break
+			    fi
+			    
+			    echo "Enter user name (type 'quit' to quit): "
+			    read userName
+			    
+			    if [ "$userName" == "quit" ];
+			    then
+				break
+			    fi
+			    
+			    curl --request PUT --user $bitbucketUserName:$bitbucketPassword $privilegeBaseUrl$bitbucketUserName/$repoName/$userName --data write >/dev/null
+			    
+			done
+			;;
+		    2)
+			fileName=""
+			
+			echo "Please enter file name (file should have lines in 'repoName userName' format): "
+			read fileName
+			
+			IFS=$'\n'
+			for line in `cat $fileName`
+			do
+			    repoName=`echo $line | awk '{print $1}'`
+			    userName=`echo $line | awk '{print $2}'`
+			    
+			    echo $bitbucketUserName:$bitbucketPassword $privilegeBaseUrl$bitbucketUserName/$repoName/$userName
+			    
+			    curl --request PUT --user $bitbucketUserName:$bitbucketPassword $privilegeBaseUrl$bitbucketUserName/$repoName/$userName --data write >/dev/null
+			    
+			done
+			;;
+	        esac
+	        
+            done
+            
             ;;
         3)
             IFS=$'\n'
             for repo in `cat createdRepos.txt`
             do
 		echo $repo
-		curl -X DELETE -v -u $bitbucketUserName:$bitbucketPassword $baseUrl$bitbucketUserName/$repo
+		curl -X DELETE -v -u $bitbucketUserName:$bitbucketPassword $repoBaseUrl$bitbucketUserName/$repo
             done
             rm -rf createdRepos.txt
             ;;

@@ -1,0 +1,2 @@
+reponame1 username1
+reponame2 username2
