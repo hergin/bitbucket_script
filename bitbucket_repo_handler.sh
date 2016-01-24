@@ -94,8 +94,6 @@ do
 			    repoName=`echo $line | awk '{print $1}'`
 			    userName=`echo $line | awk '{print $2}'`
 			    
-			    echo $bitbucketUserName:$bitbucketPassword $privilegeBaseUrl$bitbucketUserName/$repoName/$userName
-			    
 			    curl --request PUT --user $bitbucketUserName:$bitbucketPassword $privilegeBaseUrl$bitbucketUserName/$repoName/$userName --data write >/dev/null
 			    
 			done
@@ -114,8 +112,6 @@ do
 			for line in `cat $fileName`
 			do
 			    userName=$line
-			    
-			    echo $bitbucketUserName:$bitbucketPassword $privilegeBaseUrl$bitbucketUserName/$repoName/$userName
 			    
 			    curl --request PUT --user $bitbucketUserName:$bitbucketPassword $privilegeBaseUrl$bitbucketUserName/$repoName/$userName --data write >/dev/null
 			    
