@@ -36,7 +36,7 @@ do
 
 	    for i in `seq 1 $teamCount`
 	    do
-		curl -X POST -v -u $bitbucketUserName:$bitbucketPassword -H "Content-Type: application/json" $repoBaseUrl$bitbucketUserName/$classCode$semester"team"$i -d '{"scm": "git", "is_private": "true", "fork_policy": "no_public_forks"}'
+		curl -X POST -v -u $bitbucketUserName:$bitbucketPassword -H "Content-Type: application/json" $repoBaseUrl$bitbucketUserName/$classCode$semester"team"$i -d '{"scm": "git", "is_private": "true", "fork_policy": "no_public_forks"}' >/dev/null
 		echo $classCode$semester"team"$i >> createdRepos.txt
 	    done
             ;;
@@ -46,11 +46,12 @@ do
             
             addSelected=1
             
-            while [ $addSelected -ne 3 ]
+            while [ $addSelected -ne 4 ]
             do
 	        echo "1- Add manually"
-	        echo "2- Add from file"
-	        echo "3- Quit"
+	        echo "2- Add from file in 'repoName userName' format"
+	        echo "3- Add a list of users from file to a single repo"
+	        echo "4- Quit"
 	        
 	        read addSelected
 	        
@@ -99,6 +100,27 @@ do
 			    
 			done
 			;;
+		    3)
+			fileName=""
+			repoName=""
+			
+			echo "Enter repo name: "
+			read repoName
+			
+			echo "Please enter file name (file should have a single user name in each line): "
+			read fileName
+			
+			IFS=$'\n'
+			for line in `cat $fileName`
+			do
+			    userName=$line
+			    
+			    echo $bitbucketUserName:$bitbucketPassword $privilegeBaseUrl$bitbucketUserName/$repoName/$userName
+			    
+			    curl --request PUT --user $bitbucketUserName:$bitbucketPassword $privilegeBaseUrl$bitbucketUserName/$repoName/$userName --data write >/dev/null
+			    
+			done
+			;;
 	        esac
 	        
             done
@@ -109,7 +131,7 @@ do
             for repo in `cat createdRepos.txt`
             do
 		echo $repo
-		curl -X DELETE -v -u $bitbucketUserName:$bitbucketPassword $repoBaseUrl$bitbucketUserName/$repo
+		curl -X DELETE -v -u $bitbucketUserName:$bitbucketPassword $repoBaseUrl$bitbucketUserName/$repo >/dev/null
             done
             rm -rf createdRepos.txt
             ;;
