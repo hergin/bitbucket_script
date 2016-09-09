@@ -12,13 +12,14 @@ read -s bitbucketPassword
 
 selected=1
 
-while [ $selected -ne 4 ]
+while [ $selected -ne 5 ]
 do
     echo "Please select an item:"
     echo "1- Create repositories"
     echo "2- Add member to a repository"
     echo "3- Delete repository"
-    echo "4- Quit"
+    echo "4- Create eclipse template for a repository"
+    echo "5- Quit"
 
     read selected
 
@@ -51,7 +52,7 @@ do
 	        echo "1- Add manually"
 	        echo "2- Add from file in 'repoName userName' format"
 	        echo "3- Add a list of users from file to a single repo"
-	        echo "4- Quit"
+	        echo "4- Back"
 	        
 	        read addSelected
 	        
@@ -131,5 +132,73 @@ do
             done
             rm -rf createdRepos.txt
             ;;
+        4)
+        
+	    projectSelected=1
+            
+            while [ $projectSelected -ne 3 ]
+            do
+	        echo "1- Add single"
+	        echo "2- Add from file in 'repoName' in column1"
+	        echo "3- Back"
+	        
+	        read projectSelected
+	        
+	        case $projectSelected in
+		    1)
+			repoName=""
+	    
+			echo "Enter repo name: "
+			read repoName
+			
+			cp -R cs200template $repoName
+			sed -i "s/cs200template/$repoName/g" $repoName/.project
+			
+			cd $repoName
+			
+			git init
+			
+			git remote add origin https://hergin@bitbucket.org/hergin/$repoName.git
+			
+			git add .
+			git commit -m "initial project files"
+			git push -u origin master
+			
+			cd ..
+			
+			rm -rf $repoName
+			;;
+		    2)
+			fileName=""
+			
+			echo "Please enter file name (file should have a single repo name in each line): "
+			read fileName
+			
+			IFS=$'\n'
+			for line in `cat $fileName`
+			do
+			    repoName=$line
+			    
+			    cp -R cs200template $repoName
+			    sed -i "s/cs200template/$repoName/g" $repoName/.project
+			    
+			    cd $repoName
+			    
+			    git init
+			    
+			    git remote add origin https://hergin@bitbucket.org/hergin/$repoName.git
+			    
+			    git add .
+			    git commit -m "initial project files"
+			    git push -u origin master
+			    
+			    cd ..
+			    
+			    rm -rf $repoName
+			done 
+			;;
+		esac
+	    done
+	    ;;
     esac
 done
